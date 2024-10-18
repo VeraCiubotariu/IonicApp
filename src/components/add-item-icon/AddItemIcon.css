@@ -1,0 +1,11 @@
+ion-fab-button {
+    --ion-color-primary: firebrick;
+    --ion-color-primary-shade: #8a1010;
+    --ion-color-primary-tint: #cd3434;
+    --color: white;
+}
+
+ion-fab {
+    padding-bottom: 10px;
+    padding-right: 10px;
+}

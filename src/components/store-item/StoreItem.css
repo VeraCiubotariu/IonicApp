@@ -1,0 +1,40 @@
+.records-list-item {
+    --min-height: 180px;
+}
+
+.records-list-item:hover {
+    --background: #262626;
+}
+
+.vinyl {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 180px;
+    height: 180px;
+    background-position-x: -75px;
+    background-image: url("https://static.vecteezy.com/system/resources/thumbnails/008/550/648/small_2x/vintage-78-rpm-record-transparent-png.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.labels {
+    text-align: right;
+    padding-left: 40px;
+}
+
+.record-name {
+    color: white;
+    font-size: 16px;
+}
+
+.record-artist {
+    color: firebrick;
+    font-size: 14px;
+}
+
+.record-price {
+    font-size: 18px;
+    padding-top: 12px;
+    color: #d59b9b;
+}

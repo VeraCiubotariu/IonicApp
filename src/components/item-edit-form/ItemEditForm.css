@@ -1,0 +1,22 @@
+.menu-button {
+    --background: firebrick;
+    padding-left: 12px;
+    padding-bottom: 12px;
+    color: white;
+}
+
+ion-datetime::part(calendar-day active) {
+    background: firebrick;
+    border-color: #5a0808;
+    color: white;
+}
+
+ion-datetime::part(calendar-day):focus {
+    box-shadow: 0 0 0 2px #c87777;
+}
+
+ion-checkbox {
+    --checkbox-background-checked: firebrick;
+    --checkmark-color: white;
+    --border-color-checked: #c87777;
+}
