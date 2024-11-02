@@ -7,7 +7,7 @@ Simple record shop app made using React and Ionic
 - Ability to save, edit or delete records
 - Websocket updates
 
-###Ionic2
+### Ionic2
 - Offline/Online modes (in Offline mode, the user can add/update records. When back Online, the changes are sent to the server)
 - Pagination with infinite scrolling
 - Filtering via search bar
