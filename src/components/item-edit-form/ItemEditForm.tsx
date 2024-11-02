@@ -9,9 +9,9 @@ import {
   IonList,
   IonLoading,
 } from "@ionic/react";
-import useItemEditControls from "../../hooks/useItemEditControls";
 import { useContext } from "react";
 import { ItemContext } from "../../store/item-provider";
+import { useItemEditControls } from "../../hooks";
 
 export const ItemEditForm = ({
   history,

@@ -12,19 +12,26 @@ import {
 } from "@ionic/react";
 import { AuthContext } from "./AuthProvider";
 import { getLogger } from "../core";
+import { Preferences } from "@capacitor/preferences";
 
-const log = getLogger("Login");
+const log = getLogger("LoginPage");
 
 interface LoginState {
   username?: string;
   password?: string;
 }
 
-export const Login: React.FC<RouteComponentProps> = ({ history }) => {
-  const { isAuthenticated, isAuthenticating, login, authenticationError } =
-    useContext(AuthContext);
+export const LoginPage: React.FC<RouteComponentProps> = ({ history }) => {
+  const {
+    isAuthenticated,
+    isAuthenticating,
+    login,
+    signup,
+    authenticationError,
+  } = useContext(AuthContext);
   const [state, setState] = useState<LoginState>({});
   const { username, password } = state;
+
   const handlePasswwordChange = useCallback(
     (e: any) =>
       setState({
@@ -33,6 +40,7 @@ export const Login: React.FC<RouteComponentProps> = ({ history }) => {
       }),
     [state],
   );
+
   const handleUsernameChange = useCallback(
     (e: any) =>
       setState({
@@ -41,17 +49,27 @@ export const Login: React.FC<RouteComponentProps> = ({ history }) => {
       }),
     [state],
   );
-  const handleLogin = useCallback(() => {
+
+  const handleLogin = () => {
     log("handleLogin...");
-    login?.(username, password);
-  }, [username, password]);
+    //login?.(username, password);
+    login && login(username, password);
+  };
+
+  const handleSignup = () => {
+    log("handleSignup...");
+    signup && signup(username, password);
+  };
+
   log("render");
+
   useEffect(() => {
     if (isAuthenticated) {
       log("redirecting to home");
       history.push("/");
     }
   }, [isAuthenticated]);
+
   return (
     <IonPage>
       <IonHeader>
@@ -75,6 +93,7 @@ export const Login: React.FC<RouteComponentProps> = ({ history }) => {
           <div>{authenticationError.message || "Failed to authenticate"}</div>
         )}
         <IonButton onClick={handleLogin}>Login</IonButton>
+        <IonButton onClick={handleSignup}>Signup</IonButton>
       </IonContent>
     </IonPage>
   );

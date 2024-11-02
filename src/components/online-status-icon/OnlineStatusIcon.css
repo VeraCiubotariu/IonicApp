@@ -1,0 +1,14 @@
+.online-status-icon {
+    font-size: 24px
+}
+
+ion-fab {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding-top: 6px;
+}
+
+.icon-label {
+    font-size: 12px;
+}

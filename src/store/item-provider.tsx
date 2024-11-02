@@ -1,19 +1,32 @@
-import React, { useCallback, useEffect, useReducer } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 import PropTypes from "prop-types";
 import { getLogger } from "../core";
 import RecordItem from "../models/record-item";
 import {
   createItem,
   getItems,
+  getItemsPage,
   newWebSocket,
   removeItem,
   updateItem,
 } from "../api/item-api";
+import { AuthContext } from "../auth";
+import { useNetworkControls } from "../hooks";
+import { Preferences } from "@capacitor/preferences";
 
 const log = getLogger("ItemProvider");
 
 type SaveItemFn = (item: RecordItem) => Promise<any>;
 type DeleteItemFn = (itemId: string) => Promise<any>;
+type FetchPageFn = (page: number, pageSize: number) => Promise<any>;
+type ResetStateFn = () => Promise<any>;
+export const PAGE_SIZE = 8;
 
 export interface ItemsState {
   items?: RecordItem[];
@@ -22,9 +35,11 @@ export interface ItemsState {
   saving: boolean;
   savingError?: Error | null;
   saveItem?: SaveItemFn;
+  fetchPage?: FetchPageFn;
   deleting: boolean;
   deletingError?: Error | null;
   deleteItem?: DeleteItemFn;
+  resetState?: ResetStateFn;
 }
 
 interface ActionProps {
@@ -47,6 +62,7 @@ const SAVE_ITEM_FAILED = "SAVE_ITEM_FAILED";
 const DELETE_ITEM_STARTED = "DELETE_ITEM_STARTED";
 const DELETE_ITEM_SUCCEEDED = "DELETE_ITEM_SUCCEEDED";
 const DELETE_ITEM_FAILED = "DELETE_ITEM_FAILED";
+const RESET_STATE = "RESET_STATE";
 
 const reducer: (state: ItemsState, action: ActionProps) => ItemsState = (
   state,
@@ -56,9 +72,15 @@ const reducer: (state: ItemsState, action: ActionProps) => ItemsState = (
     case FETCH_ITEMS_STARTED:
       return { ...state, fetching: true, fetchingError: null };
     case FETCH_ITEMS_SUCCEEDED:
+      const newItems = state.items
+        ? state.items.concat(payload.items as RecordItem[])
+        : (payload.items as RecordItem[]);
+
+      console.log("New items" + newItems.toString());
+
       return {
         ...state,
-        items: payload.items as RecordItem[],
+        items: newItems,
         fetching: false,
       };
     case FETCH_ITEMS_FAILED:
@@ -68,7 +90,9 @@ const reducer: (state: ItemsState, action: ActionProps) => ItemsState = (
     case SAVE_ITEM_SUCCEEDED:
       const items = [...(state.items || [])];
       const item = payload.item;
-      const index = items.findIndex((it) => it.id === item.id);
+      console.log("Saving item....");
+      console.log(item);
+      const index = items.findIndex((it) => it._id === item._id);
       if (index === -1) {
         items.splice(0, 0, item);
       } else {
@@ -81,15 +105,12 @@ const reducer: (state: ItemsState, action: ActionProps) => ItemsState = (
       return { ...state, deletingError: null, deleting: true };
     case DELETE_ITEM_SUCCEEDED:
       const id = payload.id;
-      const dItems = [...(state.items || [])];
-      if (id > -1 && state.items) {
-        const index = dItems.findIndex((it) => it.id === id);
-        dItems.splice(index, 1);
-        console.log(dItems);
-      }
+      const dItems = [...(state.items || [])].filter((item) => item._id !== id);
       return { ...state, items: dItems, deleting: false };
     case DELETE_ITEM_FAILED:
       return { ...state, deletingError: payload.error, deleting: false };
+    case RESET_STATE:
+      return { ...initialState };
     default:
       return state;
   }
@@ -102,8 +123,10 @@ interface ItemProviderProps {
 }
 
 export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
-  const token = "some_token"; //useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [offlineId, setOfflineId] = useState<number>(0);
+  const { getStatus } = useNetworkControls();
   const {
     items,
     fetching,
@@ -113,10 +136,15 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
     deleting,
     deletingError,
   } = state;
+
   useEffect(getItemsEffect, [token]);
   useEffect(wsEffect, [token]);
+
   const saveItem = useCallback<SaveItemFn>(saveItemCallback, [token]);
   const deleteItem = useCallback<DeleteItemFn>(deleteItemCallback, [token]);
+  const fetchPage = useCallback<FetchPageFn>(fetchPageCallback, [token]);
+  const resetState = useCallback<ResetStateFn>(resetStateCallback, [token]);
+
   const value = {
     items,
     fetching,
@@ -124,9 +152,11 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
     saving,
     savingError,
     saveItem,
+    fetchPage,
     deleting,
     deletingError,
     deleteItem,
+    resetState,
   };
   log("returns");
   return <ItemContext.Provider value={value}>{children}</ItemContext.Provider>;
@@ -134,45 +164,133 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
   function getItemsEffect() {
     let canceled = false;
     if (token) {
-      fetchItems();
+      fetchPage(1, PAGE_SIZE);
     }
     return () => {
       canceled = true;
     };
+  }
 
-    async function fetchItems() {
-      try {
-        log("fetchItems started");
-        dispatch({ type: FETCH_ITEMS_STARTED });
-        const items = await getItems(token);
-        log("fetchItems succeeded");
-        if (!canceled) {
-          dispatch({ type: FETCH_ITEMS_SUCCEEDED, payload: { items } });
-        }
-      } catch (error) {
-        log("fetchItems failed", error);
-        dispatch({ type: FETCH_ITEMS_FAILED, payload: { error } });
+  async function fetchItems() {
+    let canceled = false;
+
+    try {
+      log("fetchItems started");
+      dispatch({ type: FETCH_ITEMS_STARTED });
+      const items = await getItems(token);
+      log("fetchItems succeeded");
+      if (!canceled) {
+        dispatch({ type: FETCH_ITEMS_SUCCEEDED, payload: { items } });
       }
+    } catch (error) {
+      log("fetchItems failed", error);
+      dispatch({ type: FETCH_ITEMS_FAILED, payload: { error } });
+    }
+  }
+
+  async function resetStateCallback() {
+    dispatch({ type: RESET_STATE });
+  }
+
+  async function fetchPageCallback(page: number, pageSize: number) {
+    try {
+      log("fetchItemsPage started");
+      dispatch({ type: FETCH_ITEMS_STARTED });
+      const items = await getItemsPage(token, page, pageSize);
+      log("fetchItems succeeded");
+      dispatch({ type: FETCH_ITEMS_SUCCEEDED, payload: { items } });
+    } catch (error) {
+      log("fetchItems failed", error);
+      dispatch({ type: FETCH_ITEMS_FAILED, payload: { error } });
+    }
+  }
+
+  async function saveItemOffline(item: RecordItem) {
+    try {
+      const { value } = await Preferences.get({ key: "savedItems" });
+      const savedItems = value ? JSON.parse(value) : [];
+
+      setOfflineId((prevOfflineId) => {
+        const newId = prevOfflineId + 1;
+        item._id = "offline" + newId;
+        savedItems.push(item);
+
+        // Update Preferences with new saved item list
+        Preferences.set({
+          key: "savedItems",
+          value: JSON.stringify(savedItems),
+        });
+
+        log("Item saved offline in Preferences");
+        return newId;
+      });
+
+      return item;
+    } catch (e) {
+      log("Failed to save item offline", e);
+    }
+  }
+
+  async function updateItemOffline(item: RecordItem) {
+    try {
+      const { value } = await Preferences.get({ key: "updatedItems" });
+      const updatedItems = value ? JSON.parse(value) : [];
+
+      updatedItems.push(item);
+
+      await Preferences.set({
+        key: "updatedItems",
+        value: JSON.stringify(updatedItems),
+      });
+
+      log("Item updated offline in Preferences");
+      return item;
+    } catch (e) {
+      log("Failed to update item offline", e);
     }
   }
 
   async function saveItemCallback(item: RecordItem) {
     try {
+      delete item.isOffline;
       log("saveItem started");
       dispatch({ type: SAVE_ITEM_STARTED });
-      const savedItem = await (item.id
+      const savedItem = await (item._id
         ? updateItem(token, item)
         : createItem(token, item));
       log("saveItem succeeded");
+      console.log(savedItem);
       dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: savedItem } });
     } catch (error) {
       log("saveItem failed");
+
+      //Offline behaviour
+      if (!(await getStatus())) {
+        log("Saving offline...");
+        item.isOffline = true;
+
+        if (item._id) {
+          await updateItemOffline(item);
+          dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: item } });
+        } else {
+          const savedItem = await saveItemOffline(item);
+          dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: savedItem } });
+        }
+
+        return;
+      }
+
       dispatch({ type: SAVE_ITEM_FAILED, payload: { error } });
     }
   }
 
   async function deleteItemCallback(id: string) {
     try {
+      if (id.startsWith("offline")) {
+        dispatch({ type: DELETE_ITEM_SUCCEEDED, payload: { id: id } });
+        return;
+      }
+
       log("delete item started");
       dispatch({ type: DELETE_ITEM_STARTED });
       await removeItem(token, id);
@@ -194,9 +312,24 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
           return;
         }
         const { type, payload: item } = message;
-        log(`ws message, item ${type} ${item.id}`);
-        if (type === "created" || type === "updated") {
-          dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item } });
+        log(`ws message, ${type}`);
+        log(item);
+
+        switch (type) {
+          case "created":
+            dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: item } });
+            break;
+          case "updated":
+            dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: item } });
+            break;
+          case "deleted":
+            if (item._id) {
+              dispatch({
+                type: DELETE_ITEM_SUCCEEDED,
+                payload: { id: item._id },
+              });
+            }
+            break;
         }
       });
     }

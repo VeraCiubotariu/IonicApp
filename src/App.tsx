@@ -34,6 +34,9 @@ import "./theme/variables.css";
 import React from "react";
 import ItemEditPage from "./pages/ItemEditPage";
 import { ItemProvider } from "./store/item-provider";
+import { AuthProvider, LoginPage, PrivateRoute } from "./auth";
+import { Preferences } from "@capacitor/preferences";
+import { PageProvider } from "./store/page-provider";
 
 setupIonicReact();
 
@@ -41,12 +44,17 @@ const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <ItemProvider>
-          <Route exact path="/items" component={HomePage} />
-          <Route exact path="/items/:id" component={ItemEditPage} />
-          <Route exact path="/item" component={ItemEditPage} />
-        </ItemProvider>
-        <Route exact path="/" render={() => <Redirect to="/items" />} />
+        <AuthProvider>
+          <Route path="/login" component={LoginPage} exact={true} />
+          <PageProvider>
+            <ItemProvider>
+              <PrivateRoute exact path="/items" component={HomePage} />
+              <PrivateRoute exact path="/items/:id" component={ItemEditPage} />
+              <PrivateRoute exact path="/item" component={ItemEditPage} />
+            </ItemProvider>
+            <Route exact path="/" render={() => <Redirect to="/items" />} />
+          </PageProvider>
+        </AuthProvider>
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>

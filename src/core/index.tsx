@@ -1,22 +1,27 @@
-export const baseUrl = 'localhost:3000';
+export const baseUrl = "localhost:3000";
 
 export const getLogger: (tag: string) => (...args: any) => void =
-  tag => (...args) => console.log(tag, ...args);
+  (tag) =>
+  (...args) =>
+    console.log(tag, ...args);
 
-const log = getLogger('api');
+const log = getLogger("api");
 
 export interface ResponseProps<T> {
   data: T;
 }
 
-export function withLogs<T>(promise: Promise<ResponseProps<T>>, fnName: string): Promise<T> {
+export function withLogs<T>(
+  promise: Promise<ResponseProps<T>>,
+  fnName: string,
+): Promise<T> {
   log(`${fnName} - started`);
   return promise
-    .then(res => {
+    .then((res) => {
       log(`${fnName} - succeeded`);
       return Promise.resolve(res.data);
     })
-    .catch(err => {
+    .catch((err) => {
       log(`${fnName} - failed`, err);
       return Promise.reject(err);
     });
@@ -24,13 +29,21 @@ export function withLogs<T>(promise: Promise<ResponseProps<T>>, fnName: string):
 
 export const config = {
   headers: {
-    'Content-Type': 'application/json'
-  }
+    "Content-Type": "application/json",
+  },
 };
 
 export const authConfig = (token?: string) => ({
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
-  }
+  },
+});
+
+export const paramsAuthConfig = (token?: string, params?: any) => ({
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+  params: params,
 });

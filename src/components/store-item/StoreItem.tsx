@@ -10,21 +10,24 @@ export const StoreItem = ({
   history: any;
 }) => {
   return (
-    <IonItem
-      className="records-list-item"
-      onClick={() => {
-        history.push(`/items/${record.id}`);
-      }}
-    >
-      <div className="vinyl">
-        <div className="labels">
-          <div className="record-name">{record.name}</div>
-          <div className="record-artist">{record.artist}</div>
-          <div className="record-price">
-            <b>{record.price} Lei</b>
+    <>
+      <IonItem
+        className="records-list-item"
+        onClick={() => {
+          history.push(`/items/${record._id}`);
+        }}
+      >
+        <div className="vinyl">
+          <div className="labels">
+            <div className="record-name">{record.name}</div>
+            <div className="record-artist">{record.artist}</div>
+            <div className="record-price">
+              <b>{record.price} Lei</b>
+            </div>
+            {record.isOffline && <div>Offline item</div>}
           </div>
         </div>
-      </div>
-    </IonItem>
+      </IonItem>
+    </>
   );
 };

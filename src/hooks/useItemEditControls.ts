@@ -4,7 +4,7 @@ import { ItemContext } from "../store/item-provider";
 import { History } from "history";
 import { match } from "react-router";
 
-const useItemEditControls = (
+export const useItemEditControls = (
   history: History,
   match: match<{ id: string }>,
 ) => {
@@ -19,7 +19,7 @@ const useItemEditControls = (
   useEffect(() => {
     if (items) {
       const routeId = match.params.id || "";
-      const item = items.find((x) => x.id == routeId);
+      const item = items.find((x) => x._id == routeId);
       setSelectedItem(item);
     }
   }, [match.params.id]);
@@ -49,8 +49,8 @@ const useItemEditControls = (
   };
 
   const handleDelete = () => {
-    if (selectedItem?.id) {
-      deleteItem && deleteItem(selectedItem?.id).then(() => history.goBack());
+    if (selectedItem?._id) {
+      deleteItem && deleteItem(selectedItem?._id).then(() => history.goBack());
     }
   };
 
@@ -69,5 +69,3 @@ const useItemEditControls = (
     handleDelete,
   };
 };
-
-export default useItemEditControls;

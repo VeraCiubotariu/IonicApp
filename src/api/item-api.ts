@@ -1,11 +1,31 @@
 import axios from "axios";
-import { authConfig, baseUrl, getLogger, withLogs } from "../core";
+import {
+  authConfig,
+  baseUrl,
+  getLogger,
+  paramsAuthConfig,
+  withLogs,
+} from "../core";
 import RecordItem from "../models/record-item";
 
-const itemUrl = `http://${baseUrl}/item`;
+const itemUrl = `http://${baseUrl}/api/item`;
 
 export const getItems: (token: string) => Promise<RecordItem[]> = (token) => {
   return withLogs(axios.get(itemUrl, authConfig(token)), "getItems");
+};
+
+export const getItemsPage: (
+  token: string,
+  page: number,
+  pageSize: number,
+) => Promise<RecordItem[]> = (token, page, pageSize) => {
+  return withLogs(
+    axios.get(
+      itemUrl,
+      paramsAuthConfig(token, { page: page, pageSize: pageSize }),
+    ),
+    "getItemsPage",
+  );
 };
 
 export const createItem: (
@@ -20,7 +40,7 @@ export const updateItem: (
   item: RecordItem,
 ) => Promise<RecordItem[]> = (token, item) => {
   return withLogs(
-    axios.put(`${itemUrl}/${item.id}`, item, authConfig(token)),
+    axios.put(`${itemUrl}/${item._id}`, item, authConfig(token)),
     "updateItem",
   );
 };

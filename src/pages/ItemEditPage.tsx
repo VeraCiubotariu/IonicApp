@@ -21,7 +21,8 @@ const ItemEditPage: React.FC<ItemEditProps> = ({
           <IonButtons slot="start">
             <IonBackButton></IonBackButton>
           </IonButtons>
-          <IonTitle>Edit Record</IonTitle>
+          {match.params.id && <IonTitle>Edit Record</IonTitle>}
+          {!match.params.id && <IonTitle>Save Record</IonTitle>}
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
