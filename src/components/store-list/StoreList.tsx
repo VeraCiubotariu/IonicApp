@@ -6,6 +6,8 @@ import {
   IonList,
   IonLoading,
   IonSearchbar,
+  IonSelect,
+  IonSelectOption,
 } from "@ionic/react";
 import RecordItem from "../../models/record-item";
 import { StoreItem } from "../store-item";
@@ -20,6 +22,7 @@ export const StoreList = ({ history }: { history: any }) => {
   const [disableInfiniteScroll, setDisableInfiniteScroll] =
     useState<boolean>(false);
   const { currentPage, setCurrentPage } = usePage();
+  const [filterCondition, setFilterCondition] = useState<string>("name");
   console.log("render", fetching);
 
   async function fetchData() {
@@ -65,12 +68,38 @@ export const StoreList = ({ history }: { history: any }) => {
         value={searchText}
         onIonInput={(e) => setSearchText(e.detail.value!)}
       />
+      <IonSelect
+        label="Filter by"
+        placeholder="Name"
+        interface="popover"
+        onIonChange={(e) => {
+          console.log(`ionChange fired with value: ${e.detail.value}`);
+          setFilterCondition(e.detail.value!);
+        }}
+      >
+        <IonSelectOption value="name">Name</IonSelectOption>
+        <IonSelectOption value="artist">Artist</IonSelectOption>
+        <IonSelectOption value="price">Price</IonSelectOption>
+      </IonSelect>
       {/*<IonLoading isOpen={fetching} message="Fetching items" />*/}
       {items && (
         <IonContent>
           <IonList className="records-list">
             {items
-              .filter((record) => record.name.indexOf(searchText) >= 0)
+              .filter((record) => {
+                switch (filterCondition) {
+                  case "name":
+                    return record.name.indexOf(searchText) == 0;
+                  case "artist":
+                    return record.artist.indexOf(searchText) == 0;
+                  case "price":
+                    return (
+                      record.price.toString() == searchText || searchText == ""
+                    );
+                  default:
+                    return record;
+                }
+              })
               .map((record: RecordItem) => {
                 return (
                   record._id && (
