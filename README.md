@@ -12,4 +12,5 @@ Simple record shop app made using React and Ionic
 - Pagination with infinite scrolling
 - Filtering via search bar
 - User login with JWT tokens
+- Logout
 - Secure REST calls and Websocket connections
