@@ -3,15 +3,22 @@ import {
   IonButton,
   IonCheckbox,
   IonDatetime,
+  IonFab,
+  IonFabButton,
+  IonIcon,
+  IonImg,
   IonInput,
   IonItem,
   IonLabel,
   IonList,
   IonLoading,
 } from "@ionic/react";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { ItemContext } from "../../store/item-provider";
 import { useItemEditControls } from "../../hooks";
+import { camera } from "ionicons/icons";
+import MyMap from "../map/MyMap";
+import { useLocation } from "../../hooks/useLocation";
 
 export const ItemEditForm = ({
   history,
@@ -26,16 +33,22 @@ export const ItemEditForm = ({
     artist,
     isBand,
     releaseDate,
+    image,
+    savePhoto,
     setName,
     setReleaseDate,
     setPrice,
     setArtist,
     setIsBand,
+    lat,
+    lng,
     handleSave,
     handleDelete,
   } = useItemEditControls(history, match);
   const { saving, savingError, deleting, deletingError } =
     useContext(ItemContext);
+
+  const { saveLocationToPreferences } = useLocation();
 
   return (
     <>
@@ -97,6 +110,16 @@ export const ItemEditForm = ({
             }
           />
         </IonItem>
+        <IonItem>{image && <IonImg src={image.webviewPath} />}</IonItem>
+        <IonItem>
+          <MyMap
+            lat={lat}
+            lng={lng}
+            itemId={match.params.id}
+            onMapClick={saveLocationToPreferences}
+            onMarkerClick={console.log}
+          />
+        </IonItem>
       </IonList>
       <IonButton className="menu-button" onClick={handleSave}>
         Save
@@ -106,6 +129,11 @@ export const ItemEditForm = ({
           Delete
         </IonButton>
       )}
+      <IonFab vertical="bottom" horizontal="center" slot="fixed">
+        <IonFabButton onClick={() => savePhoto()}>
+          <IonIcon icon={camera} />
+        </IonFabButton>
+      </IonFab>
       <IonLoading isOpen={saving} message="Saving" />
       <IonLoading isOpen={deleting} message="Deleting" />
       {savingError && <div>{savingError.message || "Failed to save item"}</div>}

@@ -4,7 +4,6 @@ import {
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   IonList,
-  IonLoading,
   IonSearchbar,
   IonSelect,
   IonSelectOption,
@@ -14,7 +13,6 @@ import { StoreItem } from "../store-item";
 import { ItemContext, PAGE_SIZE } from "../../store/item-provider";
 import React, { useContext, useState } from "react";
 import { usePage } from "../../store/page-provider";
-import _ from "lodash";
 
 export const StoreList = ({ history }: { history: any }) => {
   const { items, fetchPage, fetching, fetchingError } = useContext(ItemContext);

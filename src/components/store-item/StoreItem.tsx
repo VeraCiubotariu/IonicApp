@@ -1,6 +1,9 @@
 import "./StoreItem.css";
-import { IonItem } from "@ionic/react";
+import { IonImg, IonItem } from "@ionic/react";
 import RecordItem from "../../models/record-item";
+import { useEffect, useState } from "react";
+import { usePhotos } from "../../hooks";
+import { MyPhoto } from "../../models/photo-types";
 
 export const StoreItem = ({
   record,
@@ -9,6 +12,15 @@ export const StoreItem = ({
   record: RecordItem;
   history: any;
 }) => {
+  const { getImageById } = usePhotos();
+  const [image, setImage] = useState<MyPhoto | undefined>(undefined);
+
+  useEffect(() => {
+    getImageById(record._id!).then((img) => {
+      img && setImage(img);
+    });
+  }, []);
+
   return (
     <>
       <IonItem
@@ -18,6 +30,7 @@ export const StoreItem = ({
         }}
       >
         <div className="vinyl">
+          {image && <IonImg src={image.webviewPath} />}
           <div className="labels">
             <div className="record-name">{record.name}</div>
             <div className="record-artist">{record.artist}</div>

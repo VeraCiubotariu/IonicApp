@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import { Network } from "@capacitor/network";
 import { Preferences } from "@capacitor/preferences";
 import { ItemContext } from "../store/item-provider";
-import RecordItem from "../models/record-item";
 
 export const useNetworkControls = () => {
   const [status, setStatus] = useState<boolean>();

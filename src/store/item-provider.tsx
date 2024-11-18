@@ -260,7 +260,10 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
         : createItem(token, item));
       log("saveItem succeeded");
       console.log(savedItem);
-      dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: savedItem } });
+      dispatch({
+        type: SAVE_ITEM_SUCCEEDED,
+        payload: { item: savedItem },
+      });
     } catch (error) {
       log("saveItem failed");
 

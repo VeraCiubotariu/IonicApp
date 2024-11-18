@@ -1,4 +1,4 @@
-import { IonFab, IonIcon, IonLabel } from "@ionic/react";
+import { IonIcon, IonLabel } from "@ionic/react";
 import { wifi } from "ionicons/icons";
 import "./OnlineStatusIcon.css";
 import { useNetworkControls } from "../../hooks";

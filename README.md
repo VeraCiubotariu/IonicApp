@@ -14,3 +14,8 @@ Simple record shop app made using React and Ionic
 - User login with JWT tokens
 - Logout
 - Secure REST calls and Websocket connections
+
+### Ionic3
+- Add photos to items
+- Locate items
+- Animated components

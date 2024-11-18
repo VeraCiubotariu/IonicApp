@@ -12,7 +12,6 @@ import {
 } from "@ionic/react";
 import { AuthContext } from "./AuthProvider";
 import { getLogger } from "../core";
-import { Preferences } from "@capacitor/preferences";
 
 const log = getLogger("LoginPage");
 

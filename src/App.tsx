@@ -35,7 +35,6 @@ import React from "react";
 import ItemEditPage from "./pages/ItemEditPage";
 import { ItemProvider } from "./store/item-provider";
 import { AuthProvider, LoginPage, PrivateRoute } from "./auth";
-import { Preferences } from "@capacitor/preferences";
 import { PageProvider } from "./store/page-provider";
 
 setupIonicReact();
